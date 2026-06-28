@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超市货品管理系统</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 8px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-800);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .app {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-900);
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--gray-500);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .stat-card .label {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .stat-card.warning .value { color: var(--warning); }
+        .stat-card.success .value { color: var(--success); }
+
+        /* Toolbar */
+        .toolbar {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--gray-200);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .search {
+            flex: 1;
+            position: relative;
+        }
+
+        .search input {
+            width: 100%;
+            padding: 10px 12px 10px 40px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 14px;
+            background: var(--gray-50);
+            transition: all 0.2s;
+        }
+
+        .search input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .search::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E") center/contain no-repeat;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        select {
+            padding: 10px 12px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .view-toggle {
+            display: flex;
+            background: var(--gray-100);
+            border-radius: var(--radius);
+            padding: 4px;
+        }
+
+        .view-toggle button {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-toggle button.active {
+            background: white;
+            color: var(--gray-900);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-ghost:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-300);
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .product-card:hover {
+            border-color: var(--gray-300);
+            box-shadow: var(--shadow-md);
+        }
+
+        .product-image {
+            height: 160px;
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .badge-new { background: var(--danger); color: white; }
+        .badge-low { background: var(--warning); color: white; }
+        .badge-off { background: var(--gray-400); color: white; }
+
+        .product-id-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--gray-800);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .product-body {
+            padding: 16px;
+        }
+
+        .product-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .product-brand {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-bottom: 8px;
+        }
+
+        .product-category {
+            display: inline-block;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--danger);
+            margin-bottom: 12px;
+        }
+
+        .product-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid var(--gray-100);
+            margin-bottom: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .num {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: var(--gray-400);
+        }
+
+        .stat-item.low .num { color: var(--danger); }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* Table View */
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--gray-50);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 13px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        .thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .thumb img {
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .stock-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .stock-tag.high { background: #d1fae5; color: #065f46; }
+        .stock-tag.medium { background: #fef3c7; color: #92400e; }
+        .stock-tag.low { background: #fee2e2; color: #991b1b; }
+
+        .status-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .status-tag.active { background: #d1fae5; color: #065f46; }
+        .status-tag.inactive { background: var(--gray-100); color: var(--gray-500); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--gray-100);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--gray-200);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        /* Image Upload */
+        .upload-area {
+            border: 1px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--gray-50);
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .upload-area .icon {
+            font-size: 32px;
+            color: var(--gray-400);
+            margin-bottom: 8px;
+        }
+
+        .upload-area p {
+            color: var(--gray-500);
+            font-size: 14px;
+        }
+
+        .upload-area .hint {
+            color: var(--gray-400);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .preview-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .preview-wrap img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: var(--radius);
+        }
+
+        .preview-wrap .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--danger);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Switch */
+        .switch-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .switch {
+            width: 44px;
+            height: 24px;
+            background: var(--gray-200);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .switch.active {
+            background: var(--primary);
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        .switch.active::after {
+            transform: translateX(20px);
+        }
+
+        .switch-label {
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            border-radius: var(--radius);
+            font-size: 14px;
+            color: var(--gray-600);
+            cursor: pointer;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .info {
+            color: var(--gray-500);
+            font-size: 14px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: var(--gray-400);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            color: white;
+            font-size: 14px;
+            z-index: 2000;
+            transform: translateX(120%);
+            transition: transform 0.3s;
+            box-shadow: var(--shadow-md);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.warning { background: var(--warning); }
+
+        /* Detail Modal */
+        .detail-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .detail-image {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 12px;
+            border-radius: var(--radius);
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+        }
+
+        .detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .detail-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .detail-brand {
+            color: var(--gray-500);
+            font-size: 14px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .detail-item {
+            background: var(--gray-50);
+            padding: 12px;
+            border-radius: var(--radius);
+        }
+
+        .detail-item .label {
+            font-size: 12px;
+            color: var(--gray-400);
+        }
+
+        .detail-item .value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-top: 4px;
+        }
+
+        .detail-full {
+            background: var(--gray-50);
+            padding: 12px;
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+        }
+
+        .detail-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .product-grid { grid-template-columns: 1fr; }
+            .toolbar { flex-wrap: wrap; }
+            .filter-group { width: 100%; flex-wrap: wrap; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            .detail-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>超市货品管理系统</h1>
+            <p>货品浏览 · 库存管理 · 销售统计</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="value" id="statProducts">0</div>
+                <div class="label">商品总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="statStock">0</div>
+                <div class="label">库存总量</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="statSold">0</div>
+                <div class="label">已售数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="statValue">0</div>
+                <div class="label">库存价值</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="value" id="statLow">0</div>
+                <div class="label">库存预警</div>
+            </div>
+            <div class="stat-card success">
+                <div class="value" id="statActive">0</div>
+                <div class="label">在售商品</div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="search">
+                <input type="text" id="searchInput" placeholder="搜索产品号、名称、品牌或供应商">
+            </div>
+            <div class="filter-group">
+                <select id="categoryFilter">
+                    <option value="">全部分类</option>
+                </select>
+                <select id="statusFilter">
+                    <option value="">全部状态</option>
+                    <option value="active">在售</option>
+                    <option value="inactive">下架</option>
+                </select>
+                <select id="sortFilter">
+                    <option value="">默认排序</option>
+                    <option value="price-asc">价格升序</option>
+                    <option value="price-desc">价格降序</option>
+                    <option value="stock-asc">库存升序</option>
+                    <option value="stock-desc">库存降序</option>
+                    <option value="sold-desc">销量排序</option>
+                </select>
+            </div>
+            <div class="view-toggle">
+                <button id="cardViewBtn" class="active">卡片</button>
+                <button id="tableViewBtn">表格</button>
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal()">添加商品</button>
+        </div>
+
+        <div id="cardView" class="product-grid"></div>
+
+        <div id="tableView" style="display:none">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>图片</th>
+                            <th>产品号</th>
+                            <th>名称</th>
+                            <th>品牌</th>
+                            <th>分类</th>
+                            <th>规格</th>
+                            <th>价格</th>
+                            <th>库存</th>
+                            <th>已售</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display:none">
+            <div class="icon">📦</div>
+            <p>暂无商品数据</p>
+        </div>
+
+        <div class="pagination" id="pagination" style="display:none">
+            <button onclick="prevPage()" id="prevBtn">上一页</button>
+            <span class="info" id="pageInfo">第 1 页</span>
+            <button onclick="nextPage()" id="nextBtn">下一页</button>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加商品</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="formProductId">
+                    
+                    <div class="form-group">
+                        <label>商品图片</label>
+                        <div id="uploadArea" class="upload-area" onclick="document.getElementById('imageInput').click()">
+                            <div class="icon">📷</div>
+                            <p>点击上传图片</p>
+                            <div class="hint">支持 JPG、PNG 格式</div>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImage(event)">
+                        <div id="previewArea" style="display:none;margin-top:12px">
+                            <div class="preview-wrap">
+                                <img id="imagePreview" src="">
+                                <button class="remove-btn" onclick="removeImage()">×</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>产品号</label>
+                            <input type="text" id="formId" placeholder="自动生成">
+                        </div>
+                        <div class="form-group">
+                            <label>分类</label>
+                            <select id="formCategory">
+                                <option value="饮料">饮料</option>
+                                <option value="方便食品">方便食品</option>
+                                <option value="乳制品">乳制品</option>
+                                <option value="零食">零食</option>
+                                <option value="调味品">调味品</option>
+                                <option value="水果">水果</option>
+                                <option value="蔬菜">蔬菜</option>
+                                <option value="日用品">日用品</option>
+                                <option value="生鲜">生鲜</option>
+                                <option value="冷冻食品">冷冻食品</option>
+                                <option value="粮油">粮油</option>
+                                <option value="酒水">酒水</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>产品名称 *</label>
+                        <input type="text" id="formName" placeholder="请输入产品名称" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>品牌</label>
+                            <input type="text" id="formBrand" placeholder="品牌名称">
+                        </div>
+                        <div class="form-group">
+                            <label>规格</label>
+                            <input type="text" id="formSpec" placeholder="如 500ml">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>价格（元） *</label>
+                            <input type="number" id="formPrice" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label>库存 *</label>
+                            <input type="number" id="formStock" min="0" placeholder="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>已售</label>
+                            <input type="number" id="formSold" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>新入库</label>
+                            <input type="number" id="formNewArrival" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>预警值</label>
+                            <input type="number" id="formLowStock" min="0" value="10">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>产地</label>
+                            <input type="text" id="formOrigin" placeholder="产地">
+                        </div>
+                        <div class="form-group">
+                            <label>保质期</label>
+                            <input type="text" id="formShelfLife" placeholder="保质期">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>供应商</label>
+                        <input type="text" id="formSupplier" placeholder="供应商名称">
+                    </div>
+
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea id="formDescription" placeholder="商品描述"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>状态</label>
+                        <div class="switch-wrap">
+                            <div class="switch active" id="statusSwitch" onclick="toggleStatus()"></div>
+                            <span class="switch-label" id="statusLabel">在售</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveProduct()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>商品详情</h2>
+                <button class="modal-close" onclick="closeDetailModal()">×</button>
+            </div>
+            <div class="modal-body" id="detailBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeDetailModal()">关闭</button>
+                <button class="btn btn-warning" onclick="detailToSale()">出库</button>
+                <button class="btn btn-success" onclick="detailToRestock()">入库</button>
+                <button class="btn btn-primary" onclick="detailToEdit()">编辑</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sale Modal -->
+    <div class="modal-overlay" id="saleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>商品出库</h2>
+                <button class="modal-close" onclick="closeSaleModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:12px;color:var(--gray-600)">商品：<strong id="saleProductName"></strong></p>
+                <p style="margin-bottom:16px;color:var(--gray-600)">库存：<strong id="saleCurrentStock"></strong></p>
+                <div class="form-group">
+                    <label>出库数量</label>
+                    <input type="number" id="saleQuantity" min="1" value="1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeSaleModal()">取消</button>
+                <button class="btn btn-warning" onclick="confirmSale()">确认出库</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restock Modal -->
+    <div class="modal-overlay" id="restockModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>商品入库</h2>
+                <button class="modal-close" onclick="closeRestockModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:12px;color:var(--gray-600)">商品：<strong id="restockProductName"></strong></p>
+                <p style="margin-bottom:16px;color:var(--gray-600)">库存：<strong id="restockCurrentStock"></strong></p>
+                <div class="form-group">
+                    <label>入库数量</label>
+                    <input type="number" id="restockQuantity" min="1" value="1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeRestockModal()">取消</button>
+                <button class="btn btn-success" onclick="confirmRestock()">确认入库</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>确认删除</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div class="modal-body" style="text-align:center">
+                <p style="font-size:48px;margin-bottom:16px">⚠️</p>
+                <p style="color:var(--gray-600)">确定删除以下商品？</p>
+                <p style="font-size:18px;font-weight:600;margin-top:8px" id="deleteProductName"></p>
+                <p style="font-size:12px;color:var(--gray-400);margin-top:12px">此操作不可撤销</p>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <button class="btn btn-ghost" onclick="closeDeleteModal()">取消</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const STORAGE_KEY = 'supermarket_products';
+        let products = [];
+        let currentView = 'card';
+        let currentPage = 1;
+        const PAGE_SIZE = 12;
+        let imageData = '';
+        let saleProduct = null;
+        let restockProduct = null;
+        let deleteProduct = null;
+        let detailProduct = null;
+
+        const icons = {
+            '饮料':'🥤','方便食品':'🍜','乳制品':'🧀','零食':'🍟',
+            '调味品':'🧂','水果':'🍎','蔬菜':'🥬','日用品':'🧼',
+            '生鲜':'🥩','冷冻食品':'🧊','粮油':'🌾','酒水':'🍷','其他':'📦'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            setupEvents();
+        });
+
+        function loadProducts() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try { products = JSON.parse(stored); } catch(e) { products = []; }
+            }
+            if (products.length === 0) {
+                initSampleData();
+                saveProducts();
+            }
+            currentPage = 1;
+            render();
+            updateStats();
+            loadCategories();
+        }
+
+        function saveProducts() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        }
+
+        function initSampleData() {
+            const now = new Date().toLocaleString('zh-CN');
+            products = [
+                {productId:'P001',productName:'农夫山泉矿泉水',brand:'农夫山泉',category:'饮料',spec:'550ml',price:2.5,stock:120,soldCount:80,newArrival:50,lowStock:10,origin:'浙江杭州',shelfLife:'24个月',supplier:'农夫山泉股份有限公司',description:'天然矿泉水',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P002',productName:'康师傅红烧牛肉面',brand:'康师傅',category:'方便食品',spec:'108g/桶',price:4.5,stock:85,soldCount:115,newArrival:30,lowStock:10,origin:'天津',shelfLife:'6个月',supplier:'康师傅控股有限公司',description:'经典红烧牛肉味',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P003',productName:'伊利纯牛奶',brand:'伊利',category:'乳制品',spec:'250ml/盒',price:6.8,stock:60,soldCount:90,newArrival:40,lowStock:15,origin:'内蒙古',shelfLife:'6个月',supplier:'内蒙古伊利实业集团',description:'100%纯牛奶',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P004',productName:'乐事薯片原味',brand:'乐事',category:'零食',spec:'75g/袋',price:8.9,stock:45,soldCount:55,newArrival:20,lowStock:10,origin:'上海',shelfLife:'9个月',supplier:'百事食品（中国）有限公司',description:'原味薯片',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P005',productName:'海天酱油生抽',brand:'海天',category:'调味品',spec:'500ml/瓶',price:12.5,stock:8,soldCount:42,newArrival:0,lowStock:10,origin:'广东佛山',shelfLife:'18个月',supplier:'佛山市海天调味食品股份有限公司',description:'酿造生抽',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P006',productName:'苹果红富士',brand:'烟台苹果',category:'水果',spec:'500g',price:9.9,stock:30,soldCount:70,newArrival:25,lowStock:5,origin:'山东烟台',shelfLife:'1个月',supplier:'山东烟台苹果基地',description:'红富士苹果',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P007',productName:'雪花啤酒',brand:'雪花',category:'酒水',spec:'500ml/罐',price:5.5,stock:200,soldCount:150,newArrival:100,lowStock:20,origin:'辽宁沈阳',shelfLife:'12个月',supplier:'华润雪花啤酒有限公司',description:'清爽型啤酒',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P008',productName:'奥利奥夹心饼干',brand:'奥利奥',category:'零食',spec:'116g/盒',price:11.8,stock:55,soldCount:45,newArrival:30,lowStock:10,origin:'上海',shelfLife:'9个月',supplier:'亿滋食品企业管理（上海）有限公司',description:'巧克力夹心饼干',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P009',productName:'金龙鱼调和油',brand:'金龙鱼',category:'粮油',spec:'5L/桶',price:69.9,stock:25,soldCount:15,newArrival:10,lowStock:5,origin:'广东深圳',shelfLife:'18个月',supplier:'益海嘉里金龙鱼粮油食品',description:'食用调和油',image:'',status:'active',createTime:now,updateTime:now},
+                {productId:'P010',productName:'三全速冻饺子',brand:'三全',category:'冷冻食品',spec:'500g/袋',price:15.8,stock:40,soldCount:30,newArrival:20,lowStock:10,origin:'河南郑州',shelfLife:'12个月',supplier:'三全食品股份有限公司',description:'猪肉白菜水饺',image:'',status:'inactive',createTime:now,updateTime:now}
+            ];
+        }
+
+        function getFiltered() {
+            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+
+            let filtered = products.filter(p => {
+                const matchKeyword = !keyword || 
+                    p.productId.toLowerCase().includes(keyword) ||
+                    p.productName.toLowerCase().includes(keyword) ||
+                    (p.brand && p.brand.toLowerCase().includes(keyword)) ||
+                    (p.supplier && p.supplier.toLowerCase().includes(keyword));
+                const matchCategory = !category || p.category === category;
+                const matchStatus = !status || p.status === status;
+                return matchKeyword && matchCategory && matchStatus;
+            });
+
+            if (sort) {
+                filtered.sort((a, b) => {
+                    if (sort === 'price-asc') return a.price - b.price;
+                    if (sort === 'price-desc') return b.price - a.price;
+                    if (sort === 'stock-asc') return a.stock - b.stock;
+                    if (sort === 'stock-desc') return b.stock - a.stock;
+                    if (sort === 'sold-desc') return b.soldCount - a.soldCount;
+                    return 0;
+                });
+            }
+            return filtered;
+        }
+
+        function render() {
+            const filtered = getFiltered();
+            const cardView = document.getElementById('cardView');
+            const tableView = document.getElementById('tableView');
+            const emptyState = document.getElementById('emptyState');
+            const pagination = document.getElementById('pagination');
+
+            if (filtered.length === 0) {
+                cardView.style.display = 'none';
+                tableView.style.display = 'none';
+                emptyState.style.display = 'block';
+                pagination.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageData = filtered.slice(start, start + PAGE_SIZE);
+
+            if (totalPages > 1) {
+                pagination.style.display = 'flex';
+                document.getElementById('pageInfo').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+                document.getElementById('prevBtn').disabled = currentPage === 1;
+                document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            } else {
+                pagination.style.display = 'none';
+            }
+
+            if (currentView === 'card') {
+                cardView.style.display = 'grid';
+                tableView.style.display = 'none';
+                renderCards(pageData);
+            } else {
+                cardView.style.display = 'none';
+                tableView.style.display = 'block';
+                renderTable(pageData);
+            }
+        }
+
+        function renderCards(data) {
+            document.getElementById('cardView').innerHTML = data.map(p => {
+                const icon = icons[p.category] || '📦';
+                const isLow = p.stock < (p.lowStock || 10);
+                const isNew = p.newArrival > 0;
+                const isActive = p.status !== 'inactive';
+                return `
+                    <div class="product-card" onclick="openDetail('${p.productId}')">
+                        <div class="product-image">
+                            ${isNew ? '<span class="badge badge-new">新品</span>' : ''}
+                            ${isLow ? '<span class="badge badge-low">库存紧张</span>' : ''}
+                            ${!isActive ? '<span class="badge badge-off">已下架</span>' : ''}
+                            <span class="product-id-badge">${p.productId}</span>
+                            ${p.image ? `<img src="${p.image}" alt="${p.productName}">` : icon}
+                        </div>
+                        <div class="product-body">
+                            <div class="product-name">${p.productName}</div>
+                            ${p.brand ? `<div class="product-brand">${p.brand}</div>` : ''}
+                            <span class="product-category">${p.category}</span>
+                            <div class="product-price">¥${p.price.toFixed(2)}</div>
+                            <div class="product-stats">
+                                <div class="stat-item ${isLow ? 'low' : ''}">
+                                    <div class="num">${p.stock}</div>
+                                    <div class="label">库存</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="num">${p.soldCount}</div>
+                                    <div class="label">已售</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="num">${p.newArrival}</div>
+                                    <div class="label">新入库</div>
+                                </div>
+                            </div>
+                            <div class="product-actions" onclick="event.stopPropagation()">
+                                <button class="btn btn-warning btn-sm" onclick="openSale('${p.productId}')">出库</button>
+                                <button class="btn btn-success btn-sm" onclick="openRestock('${p.productId}')">入库</button>
+                                <button class="btn btn-ghost btn-sm" onclick="openEdit('${p.productId}')">编辑</button>
+                                <button class="btn btn-danger btn-sm" onclick="openDelete('${p.productId}')">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTable(data) {
+            document.getElementById('tableBody').innerHTML = data.map(p => {
+                const icon = icons[p.category] || '📦';
+                const isLow = p.stock < (p.lowStock || 10);
+                const isActive = p.status !== 'inactive';
+                let stockClass = 'high';
+                if (isLow) stockClass = 'low';
+                else if (p.stock < 30) stockClass = 'medium';
+                return `
+                    <tr>
+                        <td><div class="thumb">${p.image ? `<img src="${p.image}">` : icon}</div></td>
+                        <td><strong>${p.productId}</strong></td>
+                        <td>${p.productName}</td>
+                        <td>${p.brand || '-'}</td>
+                        <td><span class="product-category">${p.category}</span></td>
+                        <td>${p.spec || '-'}</td>
+                        <td style="color:var(--danger);font-weight:600">¥${p.price.toFixed(2)}</td>
+                        <td><span class="stock-tag ${stockClass}">${p.stock}</span></td>
+                        <td>${p.soldCount}</td>
+                        <td><span class="status-tag ${isActive ? 'active' : 'inactive'}">${isActive ? '在售' : '下架'}</span></td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="openSale('${p.productId}')">出库</button>
+                            <button class="btn btn-success btn-sm" onclick="openRestock('${p.productId}')">入库</button>
+                            <button class="btn btn-ghost btn-sm" onclick="openEdit('${p.productId}')">编辑</button>
+                            <button class="btn btn-danger btn-sm" onclick="openDelete('${p.productId}')">删除</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('statProducts').textContent = products.length;
+            document.getElementById('statStock').textContent = products.reduce((s, p) => s + p.stock, 0);
+            document.getElementById('statSold').textContent = products.reduce((s, p) => s + p.soldCount, 0);
+            document.getElementById('statValue').textContent = products.reduce((s, p) => s + p.stock * p.price, 0).toLocaleString();
+            document.getElementById('statLow').textContent = products.filter(p => p.stock < (p.lowStock || 10)).length;
+            document.getElementById('statActive').textContent = products.filter(p => p.status !== 'inactive').length;
+        }
+
+        function loadCategories() {
+            const cats = [...new Set(products.map(p => p.category))].sort();
+            const select = document.getElementById('categoryFilter');
+            const current = select.value;
+            select.innerHTML = '<option value="">全部分类</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            select.value = current;
+        }
+
+        function setupEvents() {
+            let timeout;
+            const handleChange = () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => { currentPage = 1; render(); }, 300);
+            };
+            document.getElementById('searchInput').addEventListener('input', handleChange);
+            document.getElementById('categoryFilter').addEventListener('change', handleChange);
+            document.getElementById('statusFilter').addEventListener('change', handleChange);
+            document.getElementById('sortFilter').addEventListener('change', handleChange);
+
+            document.getElementById('cardViewBtn').addEventListener('click', () => {
+                currentView = 'card';
+                document.getElementById('cardViewBtn').classList.add('active');
+                document.getElementById('tableViewBtn').classList.remove('active');
+                render();
+            });
+            document.getElementById('tableViewBtn').addEventListener('click', () => {
+                currentView = 'table';
+                document.getElementById('tableViewBtn').classList.add('active');
+                document.getElementById('cardViewBtn').classList.remove('active');
+                render();
+            });
+
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', e => {
+                    if (e.target === overlay) overlay.classList.remove('active');
+                });
+            });
+        }
+
+        function prevPage() { if (currentPage > 1) { currentPage--; render(); } }
+        function nextPage() {
+            const totalPages = Math.ceil(getFiltered().length / PAGE_SIZE);
+            if (currentPage < totalPages) { currentPage++; render(); }
+        }
+
+        function handleImage(e) {
+            const file = e.target.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                imageData = e.target.result;
+                document.getElementById('imagePreview').src = imageData;
+                document.getElementById('previewArea').style.display = 'block';
+                document.getElementById('uploadArea').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            imageData = '';
+            document.getElementById('imagePreview').src = '';
+            document.getElementById('previewArea').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('imageInput').value = '';
+        }
+
+        function toggleStatus() {
+            const switchEl = document.getElementById('statusSwitch');
+            const label = document.getElementById('statusLabel');
+            switchEl.classList.toggle('active');
+            label.textContent = switchEl.classList.contains('active') ? '在售' : '下架';
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '添加商品';
+            document.getElementById('productForm').reset();
+            document.getElementById('formProductId').value = '';
+            document.getElementById('formId').value = '';
+            document.getElementById('formSold').value = '0';
+            document.getElementById('formNewArrival').value = '0';
+            document.getElementById('formLowStock').value = '10';
+            document.getElementById('statusSwitch').classList.add('active');
+            document.getElementById('statusLabel').textContent = '在售';
+            imageData = '';
+            removeImage();
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function openEdit(id) {
+            const p = products.find(x => x.productId === id);
+            if (!p) return;
+            document.getElementById('modalTitle').textContent = '编辑商品';
+            document.getElementById('formProductId').value = p.productId;
+            document.getElementById('formId').value = p.productId;
+            document.getElementById('formName').value = p.productName;
+            document.getElementById('formBrand').value = p.brand || '';
+            document.getElementById('formCategory').value = p.category;
+            document.getElementById('formSpec').value = p.spec || '';
+            document.getElementById('formPrice').value = p.price;
+            document.getElementById('formStock').value = p.stock;
+            document.getElementById('formSold').value = p.soldCount;
+            document.getElementById('formNewArrival').value = p.newArrival;
+            document.getElementById('formLowStock').value = p.lowStock || 10;
+            document.getElementById('formOrigin').value = p.origin || '';
+            document.getElementById('formShelfLife').value = p.shelfLife || '';
+            document.getElementById('formSupplier').value = p.supplier || '';
+            document.getElementById('formDescription').value = p.description || '';
+            
+            const isActive = p.status !== 'inactive';
+            document.getElementById('statusSwitch').classList.toggle('active', isActive);
+            document.getElementById('statusLabel').textContent = isActive ? '在售' : '下架';
+            
+            imageData = p.image || '';
+            if (imageData) {
+                document.getElementById('imagePreview').src = imageData;
+                document.getElementById('previewArea').style.display = 'block';
+                document.getElementById('uploadArea').style.display = 'none';
+            } else {
+                removeImage();
+            }
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        function saveProduct() {
+            const id = document.getElementById('formProductId').value;
+            const name = document.getElementById('formName').value.trim();
+            const price = parseFloat(document.getElementById('formPrice').value) || 0;
+            const stock = parseInt(document.getElementById('formStock').value) || 0;
+
+            if (!name) { toast('请输入产品名称', 'warning'); return; }
+
+            const now = new Date().toLocaleString('zh-CN');
+            const status = document.getElementById('statusSwitch').classList.contains('active') ? 'active' : 'inactive';
+
+            if (id) {
+                const idx = products.findIndex(p => p.productId === id);
+                if (idx !== -1) {
+                    products[idx] = {
+                        ...products[idx],
+                        productName: name,
+                        brand: document.getElementById('formBrand').value.trim(),
+                        category: document.getElementById('formCategory').value,
+                        spec: document.getElementById('formSpec').value.trim(),
+                        price, stock,
+                        soldCount: parseInt(document.getElementById('formSold').value) || 0,
+                        newArrival: parseInt(document.getElementById('formNewArrival').value) || 0,
+                        lowStock: parseInt(document.getElementById('formLowStock').value) || 10,
+                        origin: document.getElementById('formOrigin').value.trim(),
+                        shelfLife: document.getElementById('formShelfLife').value.trim(),
+                        supplier: document.getElementById('formSupplier').value.trim(),
+                        description: document.getElementById('formDescription').value.trim(),
+                        image: imageData,
+                        status,
+                        updateTime: now
+                    };
+                    toast('更新成功', 'success');
+                }
+            } else {
+                let newId = document.getElementById('formId').value.trim();
+                if (newId && products.some(p => p.productId === newId)) {
+                    toast('产品号已存在', 'error');
+                    return;
+                }
+                if (!newId) newId = generateId();
+                products.push({
+                    productId: newId,
+                    productName: name,
+                    brand: document.getElementById('formBrand').value.trim(),
+                    category: document.getElementById('formCategory').value,
+                    spec: document.getElementById('formSpec').value.trim(),
+                    price, stock,
+                    soldCount: parseInt(document.getElementById('formSold').value) || 0,
+                    newArrival: parseInt(document.getElementById('formNewArrival').value) || 0,
+                    lowStock: parseInt(document.getElementById('formLowStock').value) || 10,
+                    origin: document.getElementById('formOrigin').value.trim(),
+                    shelfLife: document.getElementById('formShelfLife').value.trim(),
+                    supplier: document.getElementById('formSupplier').value.trim(),
+                    description: document.getElementById('formDescription').value.trim(),
+                    image: imageData,
+                    status,
+                    createTime: now,
+                    updateTime: now
+                });
+                toast('添加成功', 'success');
+            }
+
+            saveProducts();
+            closeModal();
+            render();
+            updateStats();
+            loadCategories();
+        }
+
+        function generateId() {
+            let max = 0;
+            products.forEach(p => {
+                if (p.productId.startsWith('P')) {
+                    const n = parseInt(p.productId.slice(1));
+                    if (n > max) max = n;
+                }
+            });
+            return 'P' + String(max + 1).padStart(3, '0');
+        }
+
+        function openDetail(id) {
+            const p = products.find(x => x.productId === id);
+            if (!p) return;
+            detailProduct = p;
+            const icon = icons[p.category] || '📦';
+            const isLow = p.stock < (p.lowStock || 10);
+            const isActive = p.status !== 'inactive';
+
+            document.getElementById('detailBody').innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-image">${p.image ? `<img src="${p.image}">` : icon}</div>
+                    <div class="detail-title">${p.productName}</div>
+                    <div class="detail-brand">${p.brand || '无品牌'}</div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><div class="label">产品号</div><div class="value">${p.productId}</div></div>
+                    <div class="detail-item"><div class="label">分类</div><div class="value">${p.category}</div></div>
+                    <div class="detail-item"><div class="label">价格</div><div class="value" style="color:var(--danger)">¥${p.price.toFixed(2)}</div></div>
+                    <div class="detail-item"><div class="label">库存</div><div class="value" style="color:${isLow ? 'var(--danger)' : 'var(--gray-900)'}">${p.stock}${isLow ? ' ⚠️' : ''}</div></div>
+                    <div class="detail-item"><div class="label">已售</div><div class="value">${p.soldCount}</div></div>
+                    <div class="detail-item"><div class="label">状态</div><div class="value" style="color:${isActive ? 'var(--success)' : 'var(--gray-400)'}">${isActive ? '在售' : '下架'}</div></div>
+                    ${p.spec ? `<div class="detail-item"><div class="label">规格</div><div class="value">${p.spec}</div></div>` : ''}
+                    ${p.origin ? `<div class="detail-item"><div class="label">产地</div><div class="value">${p.origin}</div></div>` : ''}
+                    ${p.shelfLife ? `<div class="detail-item"><div class="label">保质期</div><div class="value">${p.shelfLife}</div></div>` : ''}
+                </div>
+                ${p.supplier ? `<div class="detail-full"><div class="label">供应商</div><div class="value">${p.supplier}</div></div>` : ''}
+                ${p.description ? `<div class="detail-full"><div class="label">描述</div><div class="value">${p.description}</div></div>` : ''}
+                <div class="detail-time">
+                    <span>创建：${p.createTime || '-'}</span>
+                    <span>更新：${p.updateTime || '-'}</span>
+                </div>
+            `;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeDetailModal() {
+            detailProduct = null;
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        function detailToEdit() { if (detailProduct) { closeDetailModal(); openEdit(detailProduct.productId); } }
+        function detailToSale() { if (detailProduct) { closeDetailModal(); openSale(detailProduct.productId); } }
+        function detailToRestock() { if (detailProduct) { closeDetailModal(); openRestock(detailProduct.productId); } }
+
+        function openSale(id) {
+            const p = products.find(x => x.productId === id);
+            if (!p) return;
+            saleProduct = p;
+            document.getElementById('saleProductName').textContent = p.productName;
+            document.getElementById('saleCurrentStock').textContent = p.stock;
+            document.getElementById('saleQuantity').value = 1;
+            document.getElementById('saleQuantity').max = p.stock;
+            document.getElementById('saleModal').classList.add('active');
+        }
+
+        function closeSaleModal() {
+            saleProduct = null;
+            document.getElementById('saleModal').classList.remove('active');
+        }
+
+        function confirmSale() {
+            if (!saleProduct) return;
+            const qty = parseInt(document.getElementById('saleQuantity').value);
+            if (qty <= 0) { toast('请输入有效数量', 'warning'); return; }
+            if (qty > saleProduct.stock) { toast('库存不足', 'error'); return; }
+
+            const idx = products.findIndex(p => p.productId === saleProduct.productId);
+            if (idx !== -1) {
+                products[idx].stock -= qty;
+                products[idx].soldCount += qty;
+                products[idx].updateTime = new Date().toLocaleString('zh-CN');
+                saveProducts();
+                toast('出库成功', 'success');
+                closeSaleModal();
+                render();
+                updateStats();
+            }
+        }
+
+        function openRestock(id) {
+            const p = products.find(x => x.productId === id);
+            if (!p) return;
+            restockProduct = p;
+            document.getElementById('restockProductName').textContent = p.productName;
+            document.getElementById('restockCurrentStock').textContent = p.stock;
+            document.getElementById('restockQuantity').value = 1;
+            document.getElementById('restockModal').classList.add('active');
+        }
+
+        function closeRestockModal() {
+            restockProduct = null;
+            document.getElementById('restockModal').classList.remove('active');
+        }
+
+        function confirmRestock() {
+            if (!restockProduct) return;
+            const qty = parseInt(document.getElementById('restockQuantity').value);
+            if (qty <= 0) { toast('请输入有效数量', 'warning'); return; }
+
+            const idx = products.findIndex(p => p.productId === restockProduct.productId);
+            if (idx !== -1) {
+                products[idx].stock += qty;
+                products[idx].newArrival += qty;
+                products[idx].updateTime = new Date().toLocaleString('zh-CN');
+                saveProducts();
+                toast('入库成功', 'success');
+                closeRestockModal();
+                render();
+                updateStats();
+            }
+        }
+
+        function openDelete(id) {
+            const p = products.find(x => x.productId === id);
+            if (!p) return;
+            deleteProduct = p;
+            document.getElementById('deleteProductName').textContent = p.productName;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            deleteProduct = null;
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        function confirmDelete() {
+            if (!deleteProduct) return;
+            products = products.filter(p => p.productId !== deleteProduct.productId);
+            saveProducts();
+            toast('删除成功', 'success');
+            closeDeleteModal();
+            render();
+            updateStats();
+            loadCategories();
+        }
+
+        function toast(msg, type = 'success') {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = `toast ${type} show`;
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>

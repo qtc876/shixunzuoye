@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>API测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>API测试页面</h1>
+    
+    <h2>测试1: 获取商品列表 (GET)</h2>
+    <button onclick="testGetProducts()">测试GET /api/products</button>
+    
+    <h2>测试2: 添加商品 (POST)</h2>
+    <button onclick="testAddProduct()">测试POST /api/products</button>
+    
+    <h2>测试3: 获取统计</h2>
+    <button onclick="testGetStats()">测试GET /api/stats</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        async function testGetProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/products`);
+                const data = await res.json();
+                showResult('GET /api/products', res.status, data);
+            } catch (err) {
+                showResult('GET /api/products', 'ERROR', err.message);
+            }
+        }
+
+        async function testAddProduct() {
+            const testProduct = {
+                productName: '测试商品',
+                category: '其他',
+                price: 10.5,
+                stock: 100,
+                soldCount: 0,
+                newArrival: 50,
+                supplier: '测试供应商'
+            };
+            
+            try {
+                console.log('发送POST请求:', testProduct);
+                const res = await fetch(`${API_BASE}/products`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testProduct)
+                });
+                
+                console.log('响应状态:', res.status);
+                console.log('响应头:', [...res.headers.entries()]);
+                
+                const text = await res.text();
+                console.log('响应内容:', text);
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    data = text;
+                }
+                
+                showResult('POST /api/products', res.status, data);
+            } catch (err) {
+                showResult('POST /api/products', 'ERROR', err.message);
+            }
+        }
+
+        async function testGetStats() {
+            try {
+                const res = await fetch(`${API_BASE}/stats`);
+                const data = await res.json();
+                showResult('GET /api/stats', res.status, data);
+            } catch (err) {
+                showResult('GET /api/stats', 'ERROR', err.message);
+            }
+        }
+
+        function showResult(title, status, data) {
+            const div = document.getElementById('result');
+            const statusClass = status === 200 || status === 201 ? 'success' : 'error';
+            div.innerHTML += `
+                <h3>${title}</h3>
+                <p class="${statusClass}">状态码: ${status}</p>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+                <hr>
+            `;
+        }
+    </script>
+</body>
+</html>
